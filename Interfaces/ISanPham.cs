@@ -13,5 +13,6 @@ namespace DEMOwebAPI.Interfaces
         Task<SanPhamDTO> UpdateAsync(SanPhamDTO sanPham);
         Task DeleteAsync(int id);
 
+
     }
 }
