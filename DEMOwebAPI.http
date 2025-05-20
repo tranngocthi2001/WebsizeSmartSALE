@@ -1,0 +1,6 @@
+@DEMOwebAPI_HostAddress = http://localhost:5148
+
+GET {{DEMOwebAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
