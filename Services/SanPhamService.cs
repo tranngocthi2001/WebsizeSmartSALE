@@ -22,9 +22,9 @@ namespace DEMOwebAPI.Services
         }
 
 
-        public async Task<SanPhamDTO> GetSanPhamById(int id)
+        public async Task<SanPhamDTO> GetSanPhamById(int id, int DanhmucId)
         {
-            var sp = await _context.Sanphams.FindAsync(id);
+            var sp = await _context.Sanphams.FindAsync(id, DanhmucId);
             if (sp == null) return null;
 
             return new SanPhamDTO
@@ -37,21 +37,53 @@ namespace DEMOwebAPI.Services
             };
         }
 
-        public async Task<SanPhamDTO> CreateAsync(SanPhamDTO sanPham)
+        public async Task<SanPhamDTO> CreateAsync(SanPhamCreateFormDTO dto)
         {
+            string fileName = null;
+
+            // Upload file
+            if (dto.HinhAnh != null && dto.HinhAnh.Length > 0)
+            {
+                var uploads = Path.Combine("Uploads", "Images");
+                Directory.CreateDirectory(uploads); // Tạo thư mục nếu chưa có
+                fileName = $"{DateTimeOffset.Now.ToUnixTimeSeconds()}_{dto.HinhAnh.FileName}";
+                var filePath = Path.Combine(uploads, fileName);
+
+                using var stream = new FileStream(filePath, FileMode.Create);
+                await dto.HinhAnh.CopyToAsync(stream);
+            }
+
             var entity = new Sanpham
             {
-                TenSanPham = sanPham.TenSanPham,
-                Gia = sanPham.Gia,
-                SoLuong = sanPham.SoLuong
-                // Add other properties as needed
+                TenSanPham = dto.TenSanPham,
+                MoTa = dto.MoTa,
+                Gia = dto.Gia,
+                HinhAnh = "[\"" + fileName + "\"]", // lưu chuỗi JSON chứa ảnh
+                NgayTao = dto.NgayTao,
+                NgayCapNhat = dto.NgayCapNhat,
+                SoLuong = dto.SoLuong,
+                TrangThai = (short)dto.TrangThai,
+                DanhmucId = dto.DanhmucId
             };
+
             _context.Sanphams.Add(entity);
             await _context.SaveChangesAsync();
 
-            sanPham.Id = entity.Id;
-            return sanPham;
+            return new SanPhamDTO
+            {
+                Id = entity.Id,
+                TenSanPham = entity.TenSanPham,
+                Gia = entity.Gia,
+                SoLuong = entity.SoLuong,
+                MoTa = entity.MoTa,
+                NgayTao = entity.NgayTao,
+                NgayCapNhat = entity.NgayCapNhat,
+                TrangThai = entity.TrangThai,
+                DanhmucId = entity.DanhmucId,
+                HinhAnh = entity.HinhAnh
+            };
         }
+
 
         public async Task<SanPhamDTO> UpdateAsync(SanPhamDTO sanPham)
         {

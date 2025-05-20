@@ -8,8 +8,8 @@ namespace DEMOwebAPI.Interfaces
         // Define methods for product service
         // For example:
         Task<List<Sanpham>> GetAllSanPham();
-        Task<SanPhamDTO> GetSanPhamById(int id);
-        Task<SanPhamDTO> CreateAsync(SanPhamDTO sanPham);
+        Task<SanPhamDTO> GetSanPhamById(int id, int DanhmucId);
+        Task<SanPhamDTO> CreateAsync(SanPhamCreateFormDTO sanPham);
         Task<SanPhamDTO> UpdateAsync(SanPhamDTO sanPham);
         Task DeleteAsync(int id);
 
