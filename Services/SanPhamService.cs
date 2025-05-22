@@ -1,6 +1,6 @@
 ﻿using DEMOwebAPI.DTO;
 using DEMOwebAPI.Entities;
-using DEMOwebAPI.Interfaces;
+using DEMOwebAPI.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -22,35 +22,50 @@ namespace DEMOwebAPI.Services
         }
 
 
-        public async Task<SanPhamDTO> GetSanPhamById(int id, int DanhmucId)
+        // In SanPhamService.cs
+        public async Task<SanPhamDTO> GetSanPhamById(int id)
         {
-            var sp = await _context.Sanphams.FindAsync(id, DanhmucId);
-            if (sp == null) return null;
+            var sp = await _context.Sanphams.FirstOrDefaultAsync(x => x.Id == id);
+            if (sp == null) return default;
+
+            var hinhAnhs = new List<string>();
+            if (!string.IsNullOrEmpty(sp.HinhAnh))
+            {
+                var fileNames = System.Text.Json.JsonSerializer.Deserialize<List<string>>(sp.HinhAnh) ?? new List<string>();
+                hinhAnhs = fileNames.Select(f => $"/Uploads/Images/{f}").ToList();
+            }
 
             return new SanPhamDTO
             {
                 Id = sp.Id,
                 TenSanPham = sp.TenSanPham,
                 Gia = sp.Gia,
-                SoLuong = sp.SoLuong
-                // Add other properties as needed
+                SoLuong = sp.SoLuong,
+                MoTa = sp.MoTa,
+                NgayTao = sp.NgayTao,
+                NgayCapNhat = sp.NgayCapNhat,
+                TrangThai = sp.TrangThai,
+                DanhmucId = sp.DanhmucId,
+                HinhAnhs = hinhAnhs
             };
         }
 
         public async Task<SanPhamDTO> CreateAsync(SanPhamCreateFormDTO dto)
         {
-            string fileName = null;
+            var fileNames = new List<string>();
 
-            // Upload file
-            if (dto.HinhAnh != null && dto.HinhAnh.Length > 0)
+            if (dto.HinhAnhs != null && dto.HinhAnhs.Count > 0)
             {
                 var uploads = Path.Combine("Uploads", "Images");
-                Directory.CreateDirectory(uploads); // Tạo thư mục nếu chưa có
-                fileName = $"{DateTimeOffset.Now.ToUnixTimeSeconds()}_{dto.HinhAnh.FileName}";
-                var filePath = Path.Combine(uploads, fileName);
-
-                using var stream = new FileStream(filePath, FileMode.Create);
-                await dto.HinhAnh.CopyToAsync(stream);
+                Directory.CreateDirectory(uploads);
+                foreach (var file in dto.HinhAnhs)
+                {
+                    var fileName = $"{DateTimeOffset.Now.ToUnixTimeSeconds()}_{file.FileName}";
+                    var filePath = Path.Combine(uploads, fileName);
+                    using var stream = new FileStream(filePath, FileMode.Create);
+                    await file.CopyToAsync(stream);
+                    fileNames.Add(fileName);
+                }
             }
 
             var entity = new Sanpham
@@ -58,7 +73,7 @@ namespace DEMOwebAPI.Services
                 TenSanPham = dto.TenSanPham,
                 MoTa = dto.MoTa,
                 Gia = dto.Gia,
-                HinhAnh = "[\"" + fileName + "\"]", // lưu chuỗi JSON chứa ảnh
+                HinhAnh = System.Text.Json.JsonSerializer.Serialize(fileNames), // Lưu JSON
                 NgayTao = dto.NgayTao,
                 NgayCapNhat = dto.NgayCapNhat,
                 SoLuong = dto.SoLuong,
@@ -80,23 +95,46 @@ namespace DEMOwebAPI.Services
                 NgayCapNhat = entity.NgayCapNhat,
                 TrangThai = entity.TrangThai,
                 DanhmucId = entity.DanhmucId,
-                HinhAnh = entity.HinhAnh
+                HinhAnhs = fileNames
             };
         }
 
 
-        public async Task<SanPhamDTO> UpdateAsync(SanPhamDTO sanPham)
+        public async Task UpdateAsync(SanPhamUpdateFormDTO dto)
         {
-            var entity = await _context.Sanphams.FindAsync(sanPham.Id);
-            if (entity == null) return null;
+            // Pass both key values: Id and DanhmucId
+            var entity = await _context.Sanphams.FindAsync(dto.Id, dto.DanhmucId);
+            if (entity == null) return;
 
-            entity.TenSanPham = sanPham.TenSanPham;
-            entity.Gia = sanPham.Gia;
-            entity.SoLuong = sanPham.SoLuong;
-            // Update other properties as needed
+            // Lấy danh sách ảnh cũ muốn giữ lại
+            var fileNames = dto.OldImages ?? new List<string>();
+
+            // Lưu ảnh mới nếu có
+            if (dto.NewImages != null && dto.NewImages.Count > 0)
+            {
+                var uploads = Path.Combine("Uploads", "Images");
+                Directory.CreateDirectory(uploads);
+                foreach (var file in dto.NewImages)
+                {
+                    var fileName = $"{DateTimeOffset.Now.ToUnixTimeSeconds()}_{file.FileName}";
+                    var filePath = Path.Combine(uploads, fileName);
+                    using var stream = new FileStream(filePath, FileMode.Create);
+                    await file.CopyToAsync(stream);
+                    fileNames.Add(fileName);
+                }
+            }
+
+            // Cập nhật thông tin sản phẩm
+            entity.TenSanPham = dto.TenSanPham;
+            entity.MoTa = dto.MoTa;
+            entity.Gia = dto.Gia;
+            entity.SoLuong = dto.SoLuong;
+            entity.TrangThai = dto.TrangThai;
+            entity.DanhmucId = dto.DanhmucId;
+            entity.NgayCapNhat = dto.NgayCapNhat;
+            entity.HinhAnh = System.Text.Json.JsonSerializer.Serialize(fileNames);
 
             await _context.SaveChangesAsync();
-            return sanPham;
         }
 
         public async Task DeleteAsync(int id)

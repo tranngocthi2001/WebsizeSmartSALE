@@ -1,6 +1,6 @@
 ﻿using DEMOwebAPI.DTO;
 
-namespace DEMOwebAPI.Interfaces
+namespace DEMOwebAPI.Services.Interfaces
 {
     public interface IKhachhangService
     {

@@ -5,10 +5,10 @@ namespace DEMOwebAPI.DTO
     public class SanPhamDTO
     {
         public int Id { get; set; }
-        public string TenSanPham { get; set; } = null!;
-        public string MoTa { get; set; } = null!;
+        public string TenSanPham { get; set; }
+        public string MoTa { get; set; }
         public decimal Gia { get; set; }
-        public string HinhAnh { get; set; } = null!;
+        public List<string> HinhAnhs { get; set; } // Đổi sang List<string>
         public DateTime NgayTao { get; set; }
         public DateTime NgayCapNhat { get; set; }
         public int SoLuong { get; set; }

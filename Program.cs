@@ -1,7 +1,8 @@
 ﻿using DEMOwebAPI;
-using DEMOwebAPI.Interfaces;
 using DEMOwebAPI.Services;
+using DEMOwebAPI.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +30,7 @@ builder.Services.AddDbContext<DoantotnghiepContext>(options =>
 builder.Services.AddScoped<IKhachhangService, KhachhangService>();
 builder.Services.AddControllers();
 builder.Services.AddScoped<ISanPham, SanPhamService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 var app = builder.Build();
 
@@ -38,6 +40,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(Directory.GetCurrentDirectory(), "Uploads", "Images")),
+    RequestPath = "/Uploads/Images"
+});
 // Sử dụng CORS chính sách
 app.UseCors("AllowReactApp");
 //app.UseHttpsRedirection();
