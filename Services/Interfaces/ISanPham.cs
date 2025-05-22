@@ -1,7 +1,7 @@
 ﻿using DEMOwebAPI.DTO;
 using DEMOwebAPI.Entities;
 
-namespace DEMOwebAPI.Interfaces
+namespace DEMOwebAPI.Services.Interfaces
 {
     public interface ISanPham
     {
@@ -9,10 +9,10 @@ namespace DEMOwebAPI.Interfaces
         // For example:
         Task<List<Sanpham>> GetAllSanPham();
         Task<SanPhamDTO> GetSanPhamById(int id);
-        Task<SanPhamDTO> CreateAsync(SanPhamDTO sanPham);
-        Task<SanPhamDTO> UpdateAsync(SanPhamDTO sanPham);
+        Task<SanPhamDTO> CreateAsync(SanPhamCreateFormDTO sanPham);
+        //Task<SanPhamDTO> UpdateAsync(SanPhamDTO sanPham);
         Task DeleteAsync(int id);
-
-
+        Task UpdateAsync(SanPhamUpdateFormDTO dto);
+        
     }
 }

@@ -1,6 +1,6 @@
 ﻿using DEMOwebAPI.DTO;
 using DEMOwebAPI.Entities;
-using DEMOwebAPI.Interfaces;
+using DEMOwebAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
