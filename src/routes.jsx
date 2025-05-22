@@ -5,6 +5,7 @@ import Loader from './components/Loader/Loader';
 import AdminLayout from './layouts/AdminLayout';
 
 import { BASE_URL } from './config/constant';
+import { path } from 'd3';
 
 export const renderRoutes = (routes = []) => (
   <Suspense fallback={<Loader />}>
@@ -58,11 +59,20 @@ const routes = [
 
        {
     path: '/admin/products',
-      element: lazy(() => import('./views/admin/Products')) // tạo file nếu chưa có
+      element: lazy(() => import('./views/admin/product/Products')) // tạo file nếu chưa có
     },
     {
+      path: '/admin/product/details/:id',
+      element: lazy(() => import('./views/admin/product/ProductDetails'))
+    },
+    {
+      path: '/admin/product/update/:id',
+      element: lazy(()=>import('./views/admin/product/ProductUpdate'))
+    },
+
+    {
       path: '/admin/customers',
-      element: lazy(() => import('./views/admin/Customers'))
+      element: lazy(() => import('./views/admin/customer/Customers'))
     },
 
 
